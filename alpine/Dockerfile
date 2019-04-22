@@ -1,45 +1,27 @@
-FROM larvacent/ubuntu:xenial
+FROM larvacent/alpine:3.8
 
 LABEL maintainer="support@larvacent.com"
 
+# persistent / runtime deps
+ENV BUILD_DEPS autoconf dpkg-dev file g++ gcc libc-dev make linux-headers curl pcre-dev zlib-dev libressl-dev libxml2-dev libxslt-dev gd-dev
+
 RUN set -x \
-#	&& sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/' /etc/apt/sources.list \
-	&& apt-get update \
-	&& apt-get install -y --no-install-recommends --no-install-suggests \
-		curl \
-		libpcre3 \
-		libssl1.0.0 \
-		libbz2-1.0 \
-		libcurl3 \
-		libxml2 \
-		libzip4 \
-		libxslt1.1 \
-		libgd3 \
-	&& rm -r /var/lib/apt/lists/*
+	&& apk add --no-cache pcre zlib libressl libxml2 libxslt gd \
+	&& addgroup -g 82 -S www-data \
+	&& adduser -u 82 -D -S -G www-data www-data
+# 82 is the standard uid/gid for "www-data" in Alpine
 
 ARG NGINX_VERSION
 
 # Environment settings
-ENV NGINX_VERSION=${NGINX_VERSION:-1.13.9}
+ENV NGINX_VERSION=${NGINX_VERSION}
 ENV NGINX_TGZ_URL http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
 ENV NGINX_INI_DIR=/usr/local/etc/nginx
 
 RUN set -xe \
-	&& buildDeps=" \
-		make \
-		gcc \
-		libpcre3-dev \
-		libcurl4-openssl-dev \
-		libssl-dev \
-		libbz2-dev \
-		libxml2-dev \
-		libzip-dev \
-		libxslt-dev \
-		libgd-dev \
-	" \
-	&& apt-get update && apt-get install -y --no-install-recommends --no-install-suggests $buildDeps && rm -r /var/lib/apt/lists/* \
-	\
-	&& cd /usr/local/src \
+	&& apk add --no-cache --virtual .build-deps \
+	    $BUILD_DEPS  \
+	&& cd /tmp \
 	&& curl -fSL ${NGINX_TGZ_URL} -o nginx-${NGINX_VERSION}.tar.gz \
 	&& tar zxf nginx-${NGINX_VERSION}.tar.gz \
 	&& rm -rf nginx-${NGINX_VERSION}.tar.gz \
@@ -84,11 +66,12 @@ RUN set -xe \
 	&& mkdir -p /var/lib/nginx \
 	&& mkdir -p /usr/local/etc/nginx/sites \
 	&& rm -f /usr/local/etc/nginx/scgi_* \
-	&& rm -rf /usr/local/src/nginx-${NGINX_VERSION} \
-	&& apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $buildDeps
+	&& rm -rf /tmp/nginx-${NGINX_VERSION} \
+	\
+	&& apk del .build-deps
 
 # Add configuration files
-COPY image-files/ /
+COPY image-files /
 
 # forward request and error logs to docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log

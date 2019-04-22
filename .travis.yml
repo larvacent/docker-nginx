@@ -22,7 +22,7 @@ before_install:
 
 before_script:
   - env | sort
-  - cd "$OS_SUITE/$NGINX_SUITE"
+  - cd "$OS_SUITE"
   - image="larvacent/nginx:${VERSION}-${OS_SUITE}"
 
 script:
@@ -34,7 +34,7 @@ after_success:
       docker push $image;
       docker tag $image larvacent/nginx:${VERSION};
       docker push larvacent/nginx:${VERSION};
-      if [[ "${VERSION}" == "1.15.8" && "${OS_SUITE}" == "alpine" ]]; then
+      if [[ "${VERSION}" == "1.15.12" && "${OS_SUITE}" == "alpine" ]]; then
         docker tag $image larvacent/nginx:1.15;
         docker push larvacent/nginx:1.15;
         docker tag $image larvacent/nginx:latest;
