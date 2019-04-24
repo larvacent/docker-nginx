@@ -39,6 +39,8 @@ after_success:
         docker push larvacent/nginx:1.15;
         docker tag $image larvacent/nginx:mainline;
         docker push larvacent/nginx:mainline;
+#        docker tag $image larvacent/nginx:latest;
+#        docker push larvacent/nginx:latest;
       fi;
       if [[ "${VERSION}" == "1.16.0" && "${OS_SUITE}" == "alpine" ]]; then
         docker tag $image larvacent/nginx:stable;
