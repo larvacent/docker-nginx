@@ -37,16 +37,16 @@ after_success:
       if [[ "${VERSION}" == "1.15.12" && "${OS_SUITE}" == "alpine" ]]; then
         docker tag $image larvacent/nginx:1.15;
         docker push larvacent/nginx:1.15;
-        docker tag $image larvacent/nginx:latest;
-        docker push larvacent/nginx:latest;
         docker tag $image larvacent/nginx:mainline;
         docker push larvacent/nginx:mainline;
       fi;
-      if [[ "${VERSION}" == "1.14.2" && "${OS_SUITE}" == "alpine" ]]; then
+      if [[ "${VERSION}" == "1.16.0" && "${OS_SUITE}" == "alpine" ]]; then
         docker tag $image larvacent/nginx:stable;
         docker push larvacent/nginx:stable;
-        docker tag $image larvacent/nginx:1.14;
-        docker push larvacent/nginx:1.14;
+        docker tag $image larvacent/nginx:1.16;
+        docker push larvacent/nginx:1.16;
+        docker tag $image larvacent/nginx:latest;
+        docker push larvacent/nginx:latest;
       fi;
     fi;
 
